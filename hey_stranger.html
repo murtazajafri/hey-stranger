@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    background: #0a0a0a;
+    color: #f5f0e8;
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+  }
+  .noise {
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+  .page {
+    position: relative;
+    z-index: 1;
+    display: none;
+    min-height: 100vh;
+    padding: 2rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .page.active { display: flex; animation: fadeIn 0.6s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tag {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #b5935a;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+    max-width: 680px;
+    margin-bottom: 1.5rem;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: #d4a96a;
+  }
+  .subtitle {
+    font-size: 1.05rem;
+    color: #a09080;
+    text-align: center;
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+  .btn {
+    display: inline-block;
+    padding: 0.85rem 2.2rem;
+    background: #d4a96a;
+    color: #0a0a0a;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s ease;
+    margin: 0.4rem;
+  }
+  .btn:hover { background: #e8c38a; transform: translateY(-2px); }
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid #444;
+    color: #a09080;
+  }
+  .btn.ghost:hover { border-color: #888; color: #f5f0e8; background: transparent; }
+  .divider { width: 60px; height: 1px; background: #333; margin: 2rem auto; }
+  .card {
+    background: #141414;
+    border: 1px solid #222;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    margin: 1rem 0;
+  }
+  .card-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+  .card-text {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #e0d4c0;
+  }
+  .reasons-list { list-style: none; text-align: left; max-width: 440px; width: 100%; margin: 1.5rem 0; }
+  .reasons-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #1e1e1e;
+    font-size: 0.95rem;
+    color: #c0b09a;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .reasons-list li span.num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: #d4a96a;
+    min-width: 24px;
+  }
+  .highlight-box {
+    background: #161208;
+    border: 1px solid #2e2210;
+    padding: 1.5rem 2rem;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    margin: 1.5rem 0;
+  }
+  .highlight-box p { font-size: 0.9rem; color: #8a7558; line-height: 1.7; }
+  .highlight-box strong { color: #d4a96a; font-weight: 500; }
+  .verdict {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-style: italic;
+    color: #d4a96a;
+    text-align: center;
+    margin: 1.5rem 0;
+  }
+  .small-note { font-size: 0.78rem; color: #444; text-align: center; margin-top: 2rem; letter-spacing: 0.03em; }
+  .fact-box {
+    background: #0d1a0d;
+    border: 1px solid #1a2e1a;
+    padding: 1.5rem 2rem;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    margin: 1rem 0;
+  }
+  .fact-box .fact-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #3a6b3a; margin-bottom: 0.75rem; }
+  .fact-box p { font-size: 0.95rem; color: #7aab7a; line-height: 1.7; }
+  .fact-box strong { color: #9dcc9d; font-weight: 500; }
+  .shark-box {
+    background: #080e1a;
+    border: 1px solid #0f1e33;
+    padding: 1.5rem 2rem;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    margin: 1rem 0;
+  }
+  .shark-box .fact-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #2a4a7a; margin-bottom: 0.75rem; }
+  .shark-box p { font-size: 0.95rem; color: #6a9acc; line-height: 1.7; }
+  .shark-box strong { color: #8ab8e8; font-weight: 500; }
+  .name-reveal {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #d4a96a;
+    text-align: center;
+    margin: 0.5rem 0 1.5rem;
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<!-- PAGE 1: Hero -->
+<div class="page active" id="p1">
+  <div class="tag">Confidential · Eyes Only</div>
+  <h1>You don't know me.<br><em>Yet.</em></h1>
+  <p class="subtitle">But someone out there thought you were worth building a whole website for. That's either really sweet, slightly unhinged, or both. Probably both.</p>
+  <div>
+    <button class="btn" onclick="go('p2')">I'm intrigued →</button>
+    <button class="btn ghost" onclick="go('p2')">This is weird</button>
+  </div>
+  <p class="small-note">(both buttons go to the same place, just so you know)</p>
+</div>
+
+<!-- PAGE 2: The Case -->
+<div class="page" id="p2">
+  <div class="tag">Exhibit A : The Evidence</div>
+  <h1>Reasons I <em>shouldn't</em> be doing this</h1>
+  <ul class="reasons-list">
+    <li><span class="num">01</span><span>We've never spoken. Not even a like.</span></li>
+    <li><span class="num">02</span><span>Building a website to get someone's attention is objectively a lot.</span></li>
+    <li><span class="num">03</span><span>You might be already taken, or not interested, or just really busy.</span></li>
+    <li><span class="num">04</span><span>There's a non-zero chance you find this extremely strange.</span></li>
+  </ul>
+  <div class="highlight-box">
+    <p>And yet. Here we are. <strong>I did it anyway.</strong><br>Because doing nothing felt worse.</p>
+  </div>
+  <button class="btn" onclick="go('p3')">Okay I'll hear you out →</button>
+</div>
+
+<!-- PAGE 3: The Pitch -->
+<div class="page" id="p3">
+  <div class="tag">The Actual Point</div>
+  <h1>I just want to <em>say hi</em></h1>
+  <div class="card">
+    <div class="card-label">What I'm asking for</div>
+    <p class="card-text">"One conversation. No pressure, no expectations. Just two strangers seeing if they get along."</p>
+  </div>
+  <p class="subtitle" style="margin-top:1.5rem;">I'm not declaring undying love. I'm not asking you to marry me. I saw your Instagram and thought, that person seems interesting. I'd like to find out if I'm right.</p>
+  <button class="btn" onclick="go('p4')">Who even are you? →</button>
+</div>
+
+<!-- PAGE 4: About Me -->
+<div class="page" id="p4">
+  <div class="tag">The Person Behind This Madness</div>
+  <h1>Allow me to<br><em>introduce</em> myself</h1>
+  <div class="name-reveal">Murtaza Jafri.</div>
+  <ul class="reasons-list" style="max-width:460px;">
+    <li><span class="num">✓</span><span>Enough confidence to build a website. Apparently.</span></li>
+    <li><span class="num">✓</span><span>Not enough confidence to just DM "hey" like a normal person.</span></li>
+    <li><span class="num">✓</span><span>Has a sense of humor. Obviously.</span></li>
+    <li><span class="num">✓</span><span>Random fun fact: I once stayed up all night just to finish a scenario in my head and felt zero regret about it.</span></li>
+  </ul>
+  <div class="highlight-box">
+    <p>I will tell you the rest, if you're curious enough to find out.</p>
+  </div>
+  <button class="btn" onclick="go('p5')">One more thing →</button>
+</div>
+
+<!-- PAGE 5: Fun Facts -->
+<div class="page" id="p5">
+  <div class="tag">Important Information</div>
+  <h1>Things that are<br><em>genuinely true</em></h1>
+  <div class="fact-box">
+    <div class="fact-label">Fun fact #1</div>
+    <p>Otters hold hands while sleeping so they don't drift apart. <strong>This is relevant to nothing. I just thought you should know.</strong></p>
+  </div>
+  <div class="shark-box">
+    <div class="fact-label">Fun fact #2 — Very important</div>
+    <p><strong>Sharks don't know that camels exist.</strong> A shark has never once thought about a camel. It has no idea. And somehow that's the most peaceful thing I've ever heard.</p>
+  </div>
+  <p class="small-note" style="margin-top:1rem;">(I genuinely think about this more than I should)</p>
+  <button class="btn" style="margin-top:1.5rem;" onclick="go('p6')">Okay what's the verdict? →</button>
+</div>
+
+<!-- PAGE 6: CTA -->
+<div class="page" id="p6">
+  <div class="tag">Your Move</div>
+  <h1>The <em>verdict</em><br>is yours</h1>
+  <p class="subtitle">You can ignore this entirely and we'll pretend it never happened. Or you could just reply to this message. Either way, I hope this at least made you smile for 30 seconds.</p>
+  <div class="divider"></div>
+  <p class="verdict">"Life's too short to not say hi."</p>
+  <div class="highlight-box" style="margin-top:1rem;">
+    <p>— <strong>Murtaza</strong>, the guy who built a website instead of typing "hey"</p>
+  </div>
+  <p class="small-note">This website will self-destruct in approximately never. The offer stands.</p>
+</div>
+
+<script>
+  function go(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>
